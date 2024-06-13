@@ -4,7 +4,7 @@ import pickle
 import numpy as np
 
 
-def load_data():
+def load_data() -> tuple[any, any, any]:
     """
     Returns the MNIST data containing the training data, the validation data, and the test data.
     The training data consists of 50,000 entries, while the validation and test data consists of 10,000 entries each.
@@ -23,7 +23,7 @@ def load_data():
     f.close()
     return (training_data, validation_data, test_data)
 
-def label2binary_vector(j):
+def one_encode_vector(j: int):
     """
     Returns a 10-dimensional vector with 1.0 in jth position and 0.0 in the others.
     """
