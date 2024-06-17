@@ -118,7 +118,7 @@ def main():
     tr_d, va_d, te_d = load_data()
 
     net = Network([784, 30, 10])
-    net.SGD(tr_d, 30, 3.0, 10, te_d)
+    net.SGD(tr_d, 10, 3.0, 10, te_d)
 
 
 if __name__ == "__main__":
