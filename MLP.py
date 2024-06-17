@@ -80,19 +80,21 @@ class Network(object):
 
         return dCdb, dCdw
 
-    def gradientDescent(self, training_data, epochs, learning_rate, test_data=None):
+    def SGD(self, training_data, epochs, learning_rate, batch_size, test_data=None):
         m = len(training_data)
         for epoch in range(epochs):
             time1 = time.time()
             random.shuffle(training_data)
-            dCdw = [np.zeros(w.shape) for w in self.weights]
-            dCdb = [np.zeros(b.shape) for b in self.biases]
-            for x, y in training_data:
-                delta_dCdb, delta_dCdw = self.backpropagate(x, y)
-                dCdw = [nw + dnw for nw, dnw in zip(dCdw, delta_dCdw)]
-                dCdb = [nb + dnb for nb, dnb in zip(dCdb, delta_dCdb)]
-            self.weights = [w - (learning_rate/m) * nw for w, nw in zip(self.weights, dCdw)]
-            self.biases = [b - (learning_rate/m) * nb for b, nb in zip(self.biases, dCdb)]
+            batches = [training_data[k:k+batch_size] for k in range(0,m,batch_size)]
+            for batch in batches:
+                dCdw = [np.zeros(w.shape) for w in self.weights]
+                dCdb = [np.zeros(b.shape) for b in self.biases]
+                for x, y in batch:
+                    delta_dCdb, delta_dCdw = self.backpropagate(x, y)
+                    dCdw = [nw + dnw for nw, dnw in zip(dCdw, delta_dCdw)]
+                    dCdb = [nb + dnb for nb, dnb in zip(dCdb, delta_dCdb)]
+                self.weights = [w - (learning_rate/len(batch)) * nw for w, nw in zip(self.weights, dCdw)]
+                self.biases = [b - (learning_rate/len(batch)) * nb for b, nb in zip(self.biases, dCdb)]
             time2 = time.time()
             if test_data:
                 n = len(test_data)
@@ -115,8 +117,8 @@ class Network(object):
 def main():
     tr_d, va_d, te_d = load_data()
 
-    net = Network([784, 16, 10])
-    net.gradientDescent(tr_d, 300, 3.0, te_d)
+    net = Network([784, 30, 10])
+    net.SGD(tr_d, 30, 3.0, 10, te_d)
 
 
 if __name__ == "__main__":
