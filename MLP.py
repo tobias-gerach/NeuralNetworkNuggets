@@ -3,23 +3,15 @@ import time
 
 import numpy as np
 from data.MNIST.preprocess import load_data
-
-def Sigmoid(z):
-    """The sigmoid function."""
-    return 1.0 / (1.0 + np.exp(-z))
-
-
-def dSigmoid(z):
-    """Derivative of the sigmoid function."""
-    return Sigmoid(z) * (1 - Sigmoid(z))
-
+from activations.Sigmoid import Sigmoid
+from losses.MSE import MSE
 
 class Network(object):
     """
     Multi-layer perceptron
     """
 
-    def __init__(self, sizes: list) -> None:
+    def __init__(self, sizes: list, cost = MSE) -> None:
         """
         Initializes the network with random weights and biases.
         Input layer does not have weights and biases.
@@ -28,6 +20,7 @@ class Network(object):
         """
         self.num_layers = len(sizes)
         self.sizes = sizes
+        self.cost = cost
         self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
         self.weights = [np.random.randn(y, x) for x, y in zip(sizes[:-1], sizes[1:])]
 
@@ -38,7 +31,7 @@ class Network(object):
         :param a: input
         """
         for b, w in zip(self.biases, self.weights):
-            a = Sigmoid(np.dot(w, a) + b)
+            a = Sigmoid.fn(np.dot(w, a) + b)
         return a
 
     def backpropagate(self, x, y):
@@ -62,17 +55,17 @@ class Network(object):
         for b, w in zip(self.biases, self.weights):
             z = np.dot(w, a) + b
             z_list.append(z)
-            a = Sigmoid(z)
+            a = Sigmoid.fn(z)
             a_list.append(a)
 
         # Compute the output error and gradient
-        delta = (a_list[-1] - y) * dSigmoid(z_list[-1])
+        delta = self.cost.delta(z_list[-1], a_list[-1], y)
         dCdw[-1] = np.dot(delta, a_list[-2].transpose())
         dCdb[-1] = delta
 
         # Backpropagate error: for each layer l = L-1,L-2,...,2 compute error delta
         for layer in range(2, self.num_layers):
-            delta = np.dot(self.weights[-layer + 1].transpose(), delta) * dSigmoid(
+            delta = np.dot(self.weights[-layer + 1].transpose(), delta) * Sigmoid.deriv(
                 z_list[-layer]
             )
             dCdw[-layer] = np.dot(delta, a_list[-layer - 1].transpose())
@@ -99,13 +92,13 @@ class Network(object):
             if test_data:
                 n = len(test_data)
                 print("Epoch {0}: {1} / {2}, took {3:.2f} seconds".format(
-                    epoch, self.evaluate(test_data), n, time2-time1))
+                    epoch, self.accuracy(test_data), n, time2-time1))
             else:
                 print("Epoch {0} complete in {1:.2f} seconds".format(epoch, time2 - time1))
 
         
 
-    def evaluate(self, test_data) -> int:
+    def accuracy(self, test_data) -> int:
         """
         Return the number of test inputs for which the neural
         network outputs the correct result.
