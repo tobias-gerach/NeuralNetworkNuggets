@@ -3,8 +3,8 @@ import time
 
 import numpy as np
 from data.MNIST.preprocess import load_data
-from activations.Sigmoid import Sigmoid
-from losses.MSE import MSE
+from activationFunctions.Sigmoid import Sigmoid
+from costFunctions.MSE import MSE
 
 class Network(object):
     """

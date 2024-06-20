@@ -1,5 +1,5 @@
 import numpy as np
-from activations.Sigmoid import Sigmoid
+from activationFunctions.Sigmoid import Sigmoid
 
 
 class MSE(object):
